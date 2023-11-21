@@ -103,7 +103,7 @@ void Game::ProcessInput()
 	}
 
 
-	 // Player movement logic
+	// Player movement logic
 	if (state[SDL_SCANCODE_A]) {
 		mPlayer.mPos.x -= 5.0f; // Move left
 	}
@@ -114,12 +114,18 @@ void Game::ProcessInput()
 		// Jump logic (if not already jumping)
 	}
 	if (state[SDL_SCANCODE_S]) {
-		mPlayer.isCrouching = true;
-		mPlayer.mHeight = 50; // Crouch (reduce height)
+		if (!mPlayer.isCrouching) {
+			mPlayer.isCrouching = true;
+			mPlayer.mHeight = 50; // Crouch (reduce height)
+			mPlayer.mPos.y += 50; // Adjust position to stay on ground
+		}
 	}
 	else {
-		mPlayer.isCrouching = false;
-		mPlayer.mHeight = 100; // Stand up
+		if (mPlayer.isCrouching) {
+			mPlayer.isCrouching = false;
+			mPlayer.mHeight = 100; // Stand up
+			mPlayer.mPos.y -= 50; // Adjust position back to standing
+		}
 	}
 }
 
