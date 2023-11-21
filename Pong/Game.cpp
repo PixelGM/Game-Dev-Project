@@ -14,6 +14,9 @@ struct Player {
 
 Player mPlayer;
 
+// Grid variables
+bool mShowGrid = true;
+int mGridSize = 50; // Grid cell size
 
 Game::Game()
 {
@@ -132,6 +135,17 @@ void Game::ProcessInput()
 			mPlayer.mPos.y -= 40; // Adjust position back to standing (100 - 60)
 		}
 	}
+	// Toggle grid visibility with G key
+	if (state[SDL_SCANCODE_G]) {
+		mShowGrid = !mShowGrid;
+	}
+	// Adjust grid size with +/- keys
+	if (state[SDL_SCANCODE_EQUALS]) {
+		mGridSize += 10; // Increase grid size
+	}
+	if (state[SDL_SCANCODE_MINUS]) {
+		mGridSize = std::max(10, mGridSize - 10); // Decrease grid size, minimum 10
+	}
 }
 
 void Game::UpdateGame()
@@ -189,7 +203,21 @@ void Game::GenerateOutput() {
     };
     SDL_RenderFillRect(mRenderer, &playerRect);
 
-    // ... [Rest of the rendering code]
+	// Draw grid keybind
+	if (mShowGrid) {
+		SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255); // White color for grid
+
+		// Draw vertical lines
+		for (int x = 0; x < 1024; x += mGridSize) {
+			SDL_RenderDrawLine(mRenderer, x, 0, x, 768);
+		}
+
+		// Draw horizontal lines
+		for (int y = 0; y < 768; y += mGridSize) {
+			SDL_RenderDrawLine(mRenderer, 0, y, 1024, y);
+		}
+	}
+
     SDL_RenderPresent(mRenderer);
 }
 
