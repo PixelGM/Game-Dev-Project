@@ -212,7 +212,7 @@ void Game::UpdateGame()
 
 void Game::GenerateOutput() {
     // Set background to blue
-    SDL_SetRenderDrawColor(mRenderer, 0, 0, 255, 255);
+    SDL_SetRenderDrawColor(mRenderer, 0, 191, 255, 255);
     SDL_RenderClear(mRenderer);
 
     // Draw ground
