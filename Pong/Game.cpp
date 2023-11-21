@@ -28,6 +28,16 @@ const int gridWidth = 1024 / 50; // Assuming grid size of 50
 const int gridHeight = 768 / 50;
 std::vector<std::vector<Block>> gridBlocks(gridWidth, std::vector<Block>(gridHeight, { false, {128, 0, 128, 255} })); // Initialize all blocks as inactive
 
+
+bool CheckCollision(const SDL_Rect& a, const SDL_Rect& b) {
+	// Check if two rectangles intersect
+	return (a.x < b.x + b.w) &&
+		(a.x + a.w > b.x) &&
+		(a.y < b.y + b.h) &&
+		(a.y + a.h > b.y);
+}
+
+
 Game::Game()
 {
 	mWindow = nullptr;
@@ -204,6 +214,30 @@ void Game::UpdateGame()
 		mPlayer.mPos.y = 768.0f - thickness - mPlayer.mHeight;
 		mPlayer.isOnGround = true;
 		mPlayer.mVelY = 0.0f;
+	}
+
+	// Collision detection and response
+	SDL_Rect playerRect = {
+		static_cast<int>(mPlayer.mPos.x),
+		static_cast<int>(mPlayer.mPos.y),
+		mPlayer.mWidth,
+		mPlayer.mHeight
+	};
+
+	for (int x = 0; x < gridWidth; ++x) {
+		for (int y = 0; y < gridHeight; ++y) {
+			if (gridBlocks[x][y].isActive) {
+				SDL_Rect blockRect = { x * mGridSize, y * mGridSize, mGridSize, mGridSize };
+				if (CheckCollision(playerRect, blockRect)) {
+					// Handle collision
+					// For simplicity, just stop the player's movement
+					mPlayer.mVelY = 0;
+					mPlayer.mPos.y = blockRect.y - mPlayer.mHeight;
+					mPlayer.isOnGround = true;
+					break; // Exit loop after first collision for simplicity
+				}
+			}
+		}
 	}
 
 	// Update tick counts (for next frame)
