@@ -7,7 +7,9 @@ struct Player {
 	Vector2 mPos;
 	int mWidth;
 	int mHeight;
+	float mVelY; // Vertical velocity
 	bool isCrouching;
+	bool isOnGround;
 };
 
 Player mPlayer;
@@ -62,10 +64,12 @@ bool Game::Initialize()
 
 	// Initialize player
 	mPlayer.mPos.x = 100.0f;
-	mPlayer.mPos.y = 768.0f - thickness - 100.0f; // Adjust for ground height
+	mPlayer.mPos.y = 768.0f - thickness - 100.0f;
 	mPlayer.mWidth = 50;
 	mPlayer.mHeight = 100;
+	mPlayer.mVelY = 0.0f;
 	mPlayer.isCrouching = false;
+	mPlayer.isOnGround = true; // Initially, the player is on the ground
 
 	return true;
 }
@@ -110,8 +114,9 @@ void Game::ProcessInput()
 	if (state[SDL_SCANCODE_D]) {
 		mPlayer.mPos.x += 5.0f; // Move right
 	}
-	if (state[SDL_SCANCODE_W]) {
-		// Jump logic (if not already jumping)
+	if (state[SDL_SCANCODE_W] && mPlayer.isOnGround) {
+		mPlayer.mVelY = -350.0f; // Set a negative velocity to move up
+		mPlayer.isOnGround = false;
 	}
 	if (state[SDL_SCANCODE_S]) {
 		if (!mPlayer.isCrouching) {
@@ -143,6 +148,21 @@ void Game::UpdateGame()
 	if (deltaTime > 0.05f)
 	{
 		deltaTime = 0.05f;
+	}
+
+	// Apply gravity to vertical velocity
+	if (!mPlayer.isOnGround) {
+		mPlayer.mVelY += 500.0f * deltaTime; // Gravity effect
+	}
+
+	// Update player's vertical position
+	mPlayer.mPos.y += mPlayer.mVelY * deltaTime;
+
+	// Check if the player has landed on the ground
+	if (mPlayer.mPos.y >= 768.0f - thickness - mPlayer.mHeight) {
+		mPlayer.mPos.y = 768.0f - thickness - mPlayer.mHeight;
+		mPlayer.isOnGround = true;
+		mPlayer.mVelY = 0.0f;
 	}
 
 	// Update tick counts (for next frame)
