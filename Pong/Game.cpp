@@ -90,14 +90,25 @@ void Game::RunLoop()
 void Game::ProcessInput()
 {
 	SDL_Event event;
-	while (SDL_PollEvent(&event))
-	{
-		switch (event.type)
-		{
-			// If we get an SDL_QUIT event, end loop
-			case SDL_QUIT:
-				mIsRunning = false;
-				break;
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+		case SDL_QUIT:
+			mIsRunning = false;
+			break;
+		case SDL_KEYDOWN:
+			if (!event.key.repeat) {
+				if (event.key.keysym.scancode == SDL_SCANCODE_G) {
+					mShowGrid = !mShowGrid;
+				}
+				if (event.key.keysym.scancode == SDL_SCANCODE_EQUALS) {
+					mGridSize += 10; // Increase grid size
+					mGridSize = std::min(mGridSize, 200); // Optional: Max grid size limit
+				}
+				if (event.key.keysym.scancode == SDL_SCANCODE_MINUS) {
+					mGridSize = std::max(10, mGridSize - 10); // Decrease grid size, minimum 10
+				}
+			}
+			break;
 		}
 	}
 	
@@ -108,6 +119,7 @@ void Game::ProcessInput()
 	{
 		mIsRunning = false;
 	}
+
 
 
 	// Player movement logic
@@ -134,17 +146,6 @@ void Game::ProcessInput()
 			mPlayer.mHeight = 100; // Stand up
 			mPlayer.mPos.y -= 40; // Adjust position back to standing (100 - 60)
 		}
-	}
-	// Toggle grid visibility with G key
-	if (state[SDL_SCANCODE_G]) {
-		mShowGrid = !mShowGrid;
-	}
-	// Adjust grid size with +/- keys
-	if (state[SDL_SCANCODE_EQUALS]) {
-		mGridSize += 10; // Increase grid size
-	}
-	if (state[SDL_SCANCODE_MINUS]) {
-		mGridSize = std::max(10, mGridSize - 10); // Decrease grid size, minimum 10
 	}
 }
 
