@@ -12,11 +12,21 @@ struct Player {
 	bool isOnGround;
 };
 
+struct Block {
+	bool isActive;
+	SDL_Color color;
+};
+
 Player mPlayer;
 
 // Grid variables
 bool mShowGrid = true;
 int mGridSize = 50; // Grid cell size
+
+// Block variables
+const int gridWidth = 1024 / 50; // Assuming grid size of 50
+const int gridHeight = 768 / 50;
+std::vector<std::vector<Block>> gridBlocks(gridWidth, std::vector<Block>(gridHeight, { false, {128, 0, 128, 255} })); // Initialize all blocks as inactive
 
 Game::Game()
 {
@@ -109,6 +119,22 @@ void Game::ProcessInput()
 				}
 			}
 			break;
+		}
+
+		if (event.type == SDL_MOUSEBUTTONDOWN) {
+			int x, y;
+			SDL_GetMouseState(&x, &y);
+			int gridX = x / mGridSize;
+			int gridY = y / mGridSize;
+
+			if (gridX < gridWidth && gridY < gridHeight) {
+				if (event.button.button == SDL_BUTTON_LEFT) {
+					gridBlocks[gridX][gridY].isActive = false; // Remove block
+				}
+				else if (event.button.button == SDL_BUTTON_RIGHT) {
+					gridBlocks[gridX][gridY].isActive = true; // Place block
+				}
+			}
 		}
 	}
 	
@@ -216,6 +242,17 @@ void Game::GenerateOutput() {
 		// Draw horizontal lines
 		for (int y = 0; y < 768; y += mGridSize) {
 			SDL_RenderDrawLine(mRenderer, 0, y, 1024, y);
+		}
+	}
+
+	// Draw blocks
+	for (int x = 0; x < gridWidth; ++x) {
+		for (int y = 0; y < gridHeight; ++y) {
+			if (gridBlocks[x][y].isActive) {
+				SDL_Rect blockRect = { x * mGridSize, y * mGridSize, mGridSize, mGridSize };
+				SDL_SetRenderDrawColor(mRenderer, gridBlocks[x][y].color.r, gridBlocks[x][y].color.g, gridBlocks[x][y].color.b, gridBlocks[x][y].color.a);
+				SDL_RenderFillRect(mRenderer, &blockRect);
+			}
 		}
 	}
 

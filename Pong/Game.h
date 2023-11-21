@@ -2,6 +2,7 @@
 #include "SDL/SDL.h"
 
 #include <algorithm>
+#include <vector>
 
 struct Vector2
 {
@@ -21,6 +22,7 @@ private:
 	void UpdateGame();
 	void GenerateOutput();
 
+	bool mIsRunning;
 	SDL_Window* mWindow;
 	SDL_Renderer* mRenderer;
 	Uint32 mTicksCount;
