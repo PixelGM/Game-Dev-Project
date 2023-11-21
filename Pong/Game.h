@@ -24,10 +24,4 @@ private:
 	SDL_Window* mWindow;
 	SDL_Renderer* mRenderer;
 	Uint32 mTicksCount;
-	
-	bool mIsRunning;
-	int mPaddleDir;
-	Vector2 mPaddlePos;
-	Vector2 mBallPos;
-	Vector2 mBallVel;
 };
