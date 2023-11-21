@@ -8,6 +8,7 @@ struct Player {
 	int mWidth;
 	int mHeight;
 	float mVelY; // Vertical velocity
+	float mVelX; // Horizontal velocity
 	bool isCrouching;
 	bool isOnGround;
 };
@@ -160,10 +161,13 @@ void Game::ProcessInput()
 
 	// Player movement logic
 	if (state[SDL_SCANCODE_A]) {
-		mPlayer.mPos.x -= 5.0f; // Move left
+		mPlayer.mVelX = -300.0f; // Move left
 	}
-	if (state[SDL_SCANCODE_D]) {
-		mPlayer.mPos.x += 5.0f; // Move right
+	else if (state[SDL_SCANCODE_D]) {
+		mPlayer.mVelX = 300.0f; // Move right
+	}
+	else {
+		mPlayer.mVelX = 0.0f; // Stop moving horizontally
 	}
 	if (state[SDL_SCANCODE_W] && mPlayer.isOnGround) {
 		mPlayer.mVelY = -350.0f; // Set a negative velocity to move up
@@ -206,8 +210,9 @@ void Game::UpdateGame()
 		mPlayer.mVelY += 500.0f * deltaTime; // Gravity effect
 	}
 
-	// Update player's vertical position
+	// Update player's position
 	mPlayer.mPos.y += mPlayer.mVelY * deltaTime;
+	mPlayer.mPos.x += mPlayer.mVelX * deltaTime;
 
 	// Check if the player has landed on the ground
 	if (mPlayer.mPos.y >= 768.0f - thickness - mPlayer.mHeight) {
@@ -229,12 +234,24 @@ void Game::UpdateGame()
 			if (gridBlocks[x][y].isActive) {
 				SDL_Rect blockRect = { x * mGridSize, y * mGridSize, mGridSize, mGridSize };
 				if (CheckCollision(playerRect, blockRect)) {
-					// Handle collision
-					// For simplicity, just stop the player's movement
-					mPlayer.mVelY = 0;
-					mPlayer.mPos.y = blockRect.y - mPlayer.mHeight;
-					mPlayer.isOnGround = true;
-					break; // Exit loop after first collision for simplicity
+					// Handle vertical collision
+					if (mPlayer.mVelY > 0) { // Falling down
+						mPlayer.mPos.y = blockRect.y - mPlayer.mHeight;
+						mPlayer.isOnGround = true;
+						mPlayer.mVelY = 0;
+					}
+					else if (mPlayer.mVelY < 0) { // Going up
+						mPlayer.mPos.y = blockRect.y + blockRect.h;
+						mPlayer.mVelY = 0;
+					}
+
+					// Handle horizontal collision
+					if (mPlayer.mVelX > 0) { // Moving right
+						mPlayer.mPos.x = blockRect.x - mPlayer.mWidth;
+					}
+					else if (mPlayer.mVelX < 0) { // Moving left
+						mPlayer.mPos.x = blockRect.x + blockRect.w;
+					}
 				}
 			}
 		}
