@@ -116,15 +116,15 @@ void Game::ProcessInput()
 	if (state[SDL_SCANCODE_S]) {
 		if (!mPlayer.isCrouching) {
 			mPlayer.isCrouching = true;
-			mPlayer.mHeight = 50; // Crouch (reduce height)
-			mPlayer.mPos.y += 50; // Adjust position to stay on ground
+			mPlayer.mHeight = 60; // Crouch Height
+			mPlayer.mPos.y += 40; // Adjust position to stay on ground (100 - 60)
 		}
 	}
 	else {
 		if (mPlayer.isCrouching) {
 			mPlayer.isCrouching = false;
 			mPlayer.mHeight = 100; // Stand up
-			mPlayer.mPos.y -= 50; // Adjust position back to standing
+			mPlayer.mPos.y -= 40; // Adjust position back to standing (100 - 60)
 		}
 	}
 }
