@@ -191,7 +191,7 @@ void Game::ProcessInput()
 
 void Game::UpdateGame()
 {
-	// Wait until 16ms has elapsed since last frame
+	// Wait until 16ms has elapsed since last frame	
 	while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16))
 		;
 
@@ -214,13 +214,6 @@ void Game::UpdateGame()
 	mPlayer.mPos.y += mPlayer.mVelY * deltaTime;
 	mPlayer.mPos.x += mPlayer.mVelX * deltaTime;
 
-	// Check if the player has landed on the ground
-	if (mPlayer.mPos.y >= 768.0f - thickness - mPlayer.mHeight) {
-		mPlayer.mPos.y = 768.0f - thickness - mPlayer.mHeight;
-		mPlayer.isOnGround = true;
-		mPlayer.mVelY = 0.0f;
-	}
-
 	// Collision detection and response
 	SDL_Rect playerRect = {
 		static_cast<int>(mPlayer.mPos.x),
@@ -234,23 +227,31 @@ void Game::UpdateGame()
 			if (gridBlocks[x][y].isActive) {
 				SDL_Rect blockRect = { x * mGridSize, y * mGridSize, mGridSize, mGridSize };
 				if (CheckCollision(playerRect, blockRect)) {
-					// Handle vertical collision
-					if (mPlayer.mVelY > 0) { // Falling down
-						mPlayer.mPos.y = blockRect.y - mPlayer.mHeight;
-						mPlayer.isOnGround = true;
-						mPlayer.mVelY = 0;
-					}
-					else if (mPlayer.mVelY < 0) { // Going up
-						mPlayer.mPos.y = blockRect.y + blockRect.h;
-						mPlayer.mVelY = 0;
-					}
+					// Calculate overlap on each axis
+					float overlapX = std::min(playerRect.x + playerRect.w, blockRect.x + blockRect.w) - std::max(playerRect.x, blockRect.x);
+					float overlapY = std::min(playerRect.y + playerRect.h, blockRect.y + blockRect.h) - std::max(playerRect.y, blockRect.y);
 
-					// Handle horizontal collision
-					if (mPlayer.mVelX > 0) { // Moving right
-						mPlayer.mPos.x = blockRect.x - mPlayer.mWidth;
+					// Resolve collision based on the axis of least overlap
+					if (overlapX < overlapY) {
+						// Horizontal collision
+						if (mPlayer.mVelX > 0) { // Moving right
+							mPlayer.mPos.x -= overlapX;
+						}
+						else if (mPlayer.mVelX < 0) { // Moving left
+							mPlayer.mPos.x += overlapX;
+						}
+						mPlayer.mVelX = 0;
 					}
-					else if (mPlayer.mVelX < 0) { // Moving left
-						mPlayer.mPos.x = blockRect.x + blockRect.w;
+					else {
+						// Vertical collision
+						if (mPlayer.mVelY > 0) { // Falling down
+							mPlayer.mPos.y -= overlapY;
+							mPlayer.isOnGround = true;
+						}
+						else if (mPlayer.mVelY < 0) { // Going up
+							mPlayer.mPos.y += overlapY;
+						}
+						mPlayer.mVelY = 0;
 					}
 				}
 			}
