@@ -7,11 +7,19 @@ struct Player {
 	Vector2 mPos;
 	int mWidth;
 	int mHeight;
-	float mVelY; // Vertical velocity
-	float mVelX; // Horizontal velocity
+	float mVelY;
+	float mVelX;
 	bool isCrouching;
 	bool isOnGround;
+
+	// Animation fields
+	SDL_Texture* spriteSheet;
+	int frameWidth;
+	int frameHeight;
+	int currentFrame;
+	float frameTime;
 };
+
 
 struct Block {
 	bool isActive;
@@ -85,6 +93,16 @@ bool Game::Initialize()
 		SDL_Log("Failed to create renderer: %s", SDL_GetError());
 		return false;
 	}
+
+	// Initialize player sprite
+	SDL_Surface* tempSurface = IMG_Load("Idle.png");
+	mPlayer.spriteSheet = SDL_CreateTextureFromSurface(mRenderer, tempSurface);
+	SDL_FreeSurface(tempSurface);
+
+	mPlayer.frameWidth = 128; // Width of each frame
+	mPlayer.frameHeight = 128; // Height of each frame
+	mPlayer.currentFrame = 0;
+	mPlayer.frameTime = 0.0f;
 
 	// Initialize player
 	mPlayer.mPos.x = 100.0f;
@@ -220,6 +238,17 @@ void Game::UpdateGame()
 		deltaTime = 0.05f;
 	}
 
+
+	// Animation logic
+	const float frameDuration = 0.25f; // Duration of each frame in seconds
+
+	mPlayer.frameTime += deltaTime;
+	if (mPlayer.frameTime >= frameDuration) {
+		mPlayer.currentFrame = (mPlayer.currentFrame + 1) % 4; // 4 frames
+		mPlayer.frameTime = 0.0f;
+	}
+
+
 	// Apply gravity to vertical velocity
 	if (!mPlayer.isOnGround) {
 		mPlayer.mVelY += 500.0f * deltaTime; // Gravity effect
@@ -297,15 +326,32 @@ void Game::GenerateOutput() {
     SDL_Rect groundRect = {0, 768 - thickness, 1024, thickness};
     SDL_RenderFillRect(mRenderer, &groundRect);
 
-    // Draw player
-    SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255); // White color for the player
-    SDL_Rect playerRect = {
-        static_cast<int>(mPlayer.mPos.x),
-        static_cast<int>(mPlayer.mPos.y),
-        mPlayer.mWidth,
-        mPlayer.mHeight
-    };
-    SDL_RenderFillRect(mRenderer, &playerRect);
+    //// Draw player
+    //SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255); // White color for the player
+    //SDL_Rect playerRect = {
+    //    static_cast<int>(mPlayer.mPos.x),
+    //    static_cast<int>(mPlayer.mPos.y),
+    //    mPlayer.mWidth,
+    //    mPlayer.mHeight
+    //};
+    //SDL_RenderFillRect(mRenderer, &playerRect);
+
+	SDL_Rect srcRect = {
+	mPlayer.frameWidth * mPlayer.currentFrame, // X position based on current frame
+	0, // Y position (top of the sprite sheet)
+	mPlayer.frameWidth,
+	mPlayer.frameHeight
+	};
+
+	SDL_Rect destRect = {
+		static_cast<int>(mPlayer.mPos.x),
+		static_cast<int>(mPlayer.mPos.y),
+		mPlayer.frameWidth,
+		mPlayer.frameHeight
+	};
+
+	SDL_RenderCopy(mRenderer, mPlayer.spriteSheet, &srcRect, &destRect);
+
 
 	// Draw grid keybind
 	if (mShowGrid) {
@@ -338,6 +384,7 @@ void Game::GenerateOutput() {
 
 void Game::Shutdown()
 {
+	SDL_DestroyTexture(mPlayer.spriteSheet);
 	SDL_DestroyRenderer(mRenderer);
 	SDL_DestroyWindow(mWindow);
 	SDL_Quit();
