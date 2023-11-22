@@ -337,19 +337,26 @@ void Game::GenerateOutput() {
     //SDL_RenderFillRect(mRenderer, &playerRect);
 
 	SDL_Rect srcRect = {
-	mPlayer.frameWidth * mPlayer.currentFrame, // X position based on current frame
-	0, // Y position (top of the sprite sheet)
-	mPlayer.frameWidth,
-	mPlayer.frameHeight
+		mPlayer.frameWidth * mPlayer.currentFrame, // X position based on current frame
+		0, // Y position (top of the sprite sheet)
+		mPlayer.frameWidth,
+		mPlayer.frameHeight
 	};
 
-	int halfGridHeight = mGridSize / 2;
+	int adjustedHeight = mPlayer.mHeight;
+	int yOffset = 0;
+
+	// Adjust height and Y-offset if the player is crouching
+	if (mPlayer.isCrouching) {
+		adjustedHeight /= 2; // Example: Reduce height by half
+		yOffset = adjustedHeight; // Move down to keep feet at the same position
+	}
 
 	SDL_Rect destRect = {
 		static_cast<int>(mPlayer.mPos.x),
-		static_cast<int>(mPlayer.mPos.y) - halfGridHeight, // Adjust Y position
+		static_cast<int>(mPlayer.mPos.y) + yOffset,
 		mPlayer.frameWidth,
-		mPlayer.frameHeight
+		adjustedHeight
 	};
 
 	SDL_RenderCopy(mRenderer, mPlayer.spriteSheet, &srcRect, &destRect);
