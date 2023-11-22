@@ -214,6 +214,9 @@ void Game::UpdateGame()
 	mPlayer.mPos.y += mPlayer.mVelY * deltaTime;
 	mPlayer.mPos.x += mPlayer.mVelX * deltaTime;
 
+	// Reset ground collision flag
+	mPlayer.isOnGround = false;
+
 	// Collision detection and response
 	SDL_Rect playerRect = {
 		static_cast<int>(mPlayer.mPos.x),
@@ -256,6 +259,13 @@ void Game::UpdateGame()
 				}
 			}
 		}
+	}
+
+	// Check if the player has landed on the ground
+	if (mPlayer.mPos.y >= 768.0f - thickness - mPlayer.mHeight) {
+		mPlayer.mPos.y = 768.0f - thickness - mPlayer.mHeight;
+		mPlayer.isOnGround = true;
+		mPlayer.mVelY = 0.0f;
 	}
 
 	// Update tick counts (for next frame)
