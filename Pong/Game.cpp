@@ -343,9 +343,11 @@ void Game::GenerateOutput() {
 	mPlayer.frameHeight
 	};
 
+	int halfGridHeight = mGridSize / 2;
+
 	SDL_Rect destRect = {
 		static_cast<int>(mPlayer.mPos.x),
-		static_cast<int>(mPlayer.mPos.y),
+		static_cast<int>(mPlayer.mPos.y) - halfGridHeight, // Adjust Y position
 		mPlayer.frameWidth,
 		mPlayer.frameHeight
 	};
