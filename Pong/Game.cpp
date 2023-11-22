@@ -122,12 +122,17 @@ void Game::ProcessInput()
 					mShowGrid = !mShowGrid;
 				}
 				if (event.key.keysym.scancode == SDL_SCANCODE_EQUALS) {
+			#ifndef NDEBUG
 					mGridSize += 10; // Increase grid size
 					mGridSize = std::min(mGridSize, 200); // Optional: Max grid size limit
+			#endif
 				}
 				if (event.key.keysym.scancode == SDL_SCANCODE_MINUS) {
+			#ifndef NDEBUG
 					mGridSize = std::max(10, mGridSize - 10); // Decrease grid size, minimum 10
+			#endif
 				}
+
 			}
 			break;
 		}
@@ -161,10 +166,20 @@ void Game::ProcessInput()
 
 	// Player movement logic
 	if (state[SDL_SCANCODE_A]) {
-		mPlayer.mVelX = -300.0f; // Move left
+		if (mPlayer.isCrouching) {
+			mPlayer.mVelX = -100.0f; // Move slower while crouching
+		}
+		else {
+			mPlayer.mVelX = -300.0f; // Move left
+		}
 	}
 	else if (state[SDL_SCANCODE_D]) {
-		mPlayer.mVelX = 300.0f; // Move right
+		if (mPlayer.isCrouching) {
+			mPlayer.mVelX = 100.0f; // Move slower while crouching
+		}
+		else {
+			mPlayer.mVelX = 300.0f; // Move right
+		}
 	}
 	else {
 		mPlayer.mVelX = 0.0f; // Stop moving horizontally
