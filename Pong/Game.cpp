@@ -261,7 +261,7 @@ void Game::UpdateGame()
 	// Reset ground collision flag
 	mPlayer.isOnGround = false;
 
-	// Collision detection and response
+	// Collision detection and response (Player Hitbox)
 	SDL_Rect playerRect = {
 		static_cast<int>(mPlayer.mPos.x),
 		static_cast<int>(mPlayer.mPos.y),
