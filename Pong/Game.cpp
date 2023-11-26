@@ -133,6 +133,11 @@ bool Game::Initialize()
 	mPlayer.isCrouching = false;
 	mPlayer.isOnGround = true; // Initially, the player is on the ground
 
+	// Initialize inventory
+	mInventory.blocks.push_back({ true, {128, 0, 128, 255} }); // Add one purple block
+	mInventory.blocks.push_back({ true, {255, 255, 0, 255} }); // Add one yellow block
+	mInventory.selectedIndex = 0; // Start with the first block selected
+
 	return true;
 }
 
@@ -178,18 +183,22 @@ void Game::ProcessInput()
 		if (event.type == SDL_MOUSEBUTTONDOWN) {
 			int x, y;
 			SDL_GetMouseState(&x, &y);
-			int gridX = x / mGridSize;
-			int gridY = y / mGridSize;
+			int gridX = x / mGridSize; // Calculate gridX based on mouse x-coordinate
+			int gridY = y / mGridSize; // Calculate gridY based on mouse y-coordinate
 
 			if (gridX < gridWidth && gridY < gridHeight) {
 				if (event.button.button == SDL_BUTTON_LEFT) {
 					gridBlocks[gridX][gridY].isActive = false; // Remove block
 				}
 				else if (event.button.button == SDL_BUTTON_RIGHT) {
-					gridBlocks[gridX][gridY].isActive = true; // Place block
+					if (mInventory.selectedIndex < mInventory.blocks.size()) {
+						gridBlocks[gridX][gridY] = mInventory.blocks[mInventory.selectedIndex]; // Place selected block
+						gridBlocks[gridX][gridY].isActive = true;
+					}
 				}
 			}
 		}
+
 	}
 
 	// Handle block pickup
@@ -439,18 +448,30 @@ void Game::GenerateOutput() {
 	SDL_Rect invBackgroundRect = { 0, invGridYPos, 1024, invGridSize };
 	SDL_RenderFillRect(mRenderer, &invBackgroundRect);
 
+	// Calculate starting position for inventory blocks
+	int invStartX = 512 - (mInventory.blocks.size() * invGridSize) / 2;
+
 	// Draw inventory blocks
 	for (size_t i = 0; i < mInventory.blocks.size(); ++i) {
-		SDL_Rect invBlockRect = { static_cast<int>(i * invGridSize), invGridYPos, invGridSize, invGridSize };
+		SDL_Rect invBlockRect = { invStartX + static_cast<int>(i * invGridSize), invGridYPos, invGridSize, invGridSize };
 		SDL_SetRenderDrawColor(mRenderer, mInventory.blocks[i].color.r, mInventory.blocks[i].color.g, mInventory.blocks[i].color.b, mInventory.blocks[i].color.a);
 		SDL_RenderFillRect(mRenderer, &invBlockRect);
 	}
 
 	// Highlight selected block in inventory
-	if (mInventory.selectedIndex < mInventory.blocks.size()) {
-		SDL_Rect selectedRect = { mInventory.selectedIndex * invGridSize, invGridYPos, invGridSize, invGridSize };
-		SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255); // White color for selection highlight
-		SDL_RenderDrawRect(mRenderer, &selectedRect); // Draw a rectangle around the selected block
+	invStartX = 512 - (mInventory.blocks.size() * invGridSize) / 2;
+	SDL_Rect selectedRect = { invStartX + mInventory.selectedIndex * invGridSize, invGridYPos, invGridSize, invGridSize };
+	SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255); // White color for selection highlight
+	SDL_RenderDrawRect(mRenderer, &selectedRect);
+
+	for (int x = 0; x < gridWidth; ++x) {
+		for (int y = 0; y < gridHeight; ++y) {
+			if (gridBlocks[x][y].isActive) {
+				SDL_Rect blockRect = { x * mGridSize, y * mGridSize, mGridSize, mGridSize };
+				SDL_SetRenderDrawColor(mRenderer, gridBlocks[x][y].color.r, gridBlocks[x][y].color.g, gridBlocks[x][y].color.b, gridBlocks[x][y].color.a);
+				SDL_RenderFillRect(mRenderer, &blockRect);
+			}
+		}
 	}
 
     SDL_RenderPresent(mRenderer);
