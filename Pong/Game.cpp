@@ -26,7 +26,22 @@ struct Block {
 	SDL_Color color;
 };
 
+struct Inventory {
+	std::vector<Block> blocks;
+	int maxCapacity = 64;
+	int selectedIndex = 0;
+};
+
+struct BlockPickup {
+	Vector2 position;
+	Block block;
+	bool isActive;
+};
+
 Player mPlayer;
+SDL_Rect playerRect;
+Inventory mInventory;
+std::vector<BlockPickup> mBlockPickups;
 
 // Grid variables
 bool mShowGrid = true;
@@ -37,6 +52,11 @@ const int gridWidth = 1024 / 50; // Assuming grid size of 50
 const int gridHeight = 768 / 50;
 std::vector<std::vector<Block>> gridBlocks(gridWidth, std::vector<Block>(gridHeight, { false, {128, 0, 128, 255} })); // Initialize all blocks as inactive
 
+// Inventory variables
+const int invGridSize = 50; // Size of each inventory grid cell
+const int invGridWidth = 1024 / invGridSize; // Width of inventory grid
+const int invGridHeight = 1; // Height of inventory grid (1 row)
+const int invGridYPos = 768 - invGridSize; // Y position of inventory grid
 
 bool CheckCollision(const SDL_Rect& a, const SDL_Rect& b) {
 	// Check if two rectangles intersect
@@ -171,6 +191,19 @@ void Game::ProcessInput()
 			}
 		}
 	}
+
+	// Handle block pickup
+	for (auto& pickup : mBlockPickups) {
+		if (pickup.isActive) {
+			SDL_Rect pickupRect = { static_cast<int>(pickup.position.x), static_cast<int>(pickup.position.y), mGridSize / 2, mGridSize / 2 };
+			if (CheckCollision(playerRect, pickupRect)) {
+				if (mInventory.blocks.size() < mInventory.maxCapacity) {
+					mInventory.blocks.push_back(pickup.block);
+					pickup.isActive = false; // Deactivate the pickup
+				}
+			}
+		}
+	}
 	
 	// Get state of keyboard
 	const Uint8* state = SDL_GetKeyboardState(NULL);
@@ -220,6 +253,13 @@ void Game::ProcessInput()
 			mPlayer.mPos.y -= 40; // Adjust position back to standing (100 - 60)
 		}
 	}
+	// Handle inventory selection
+	if (state[SDL_SCANCODE_LEFT]) {
+		mInventory.selectedIndex = std::max(0, mInventory.selectedIndex - 1);
+	}
+	if (state[SDL_SCANCODE_RIGHT]) {
+		mInventory.selectedIndex = std::min(static_cast<int>(mInventory.blocks.size()) - 1, mInventory.selectedIndex + 1);
+	}
 }
 
 void Game::UpdateGame()
@@ -262,7 +302,7 @@ void Game::UpdateGame()
 	mPlayer.isOnGround = false;
 
 	// Collision detection and response (Player Hitbox)
-	SDL_Rect playerRect = {
+	playerRect = {
 		static_cast<int>(mPlayer.mPos.x),
 		static_cast<int>(mPlayer.mPos.y),
 		mPlayer.mWidth,
@@ -326,16 +366,6 @@ void Game::GenerateOutput() {
     SDL_Rect groundRect = {0, 768 - thickness, 1024, thickness};
     SDL_RenderFillRect(mRenderer, &groundRect);
 
-    //// Draw player
-    //SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255); // White color for the player
-    //SDL_Rect playerRect = {
-    //    static_cast<int>(mPlayer.mPos.x),
-    //    static_cast<int>(mPlayer.mPos.y),
-    //    mPlayer.mWidth,
-    //    mPlayer.mHeight
-    //};
-    //SDL_RenderFillRect(mRenderer, &playerRect);
-
 	SDL_Rect srcRect = {
 		mPlayer.frameWidth * mPlayer.currentFrame, // X position based on current frame
 		0, // Y position (top of the sprite sheet)
@@ -386,6 +416,41 @@ void Game::GenerateOutput() {
 				SDL_RenderFillRect(mRenderer, &blockRect);
 			}
 		}
+	}
+
+	// Draw inventory grid
+	for (size_t i = 0; i < mInventory.blocks.size(); ++i) {
+		SDL_Rect invRect = { static_cast<int>(i * mGridSize), 768 - mGridSize, mGridSize, mGridSize };
+		SDL_SetRenderDrawColor(mRenderer, mInventory.blocks[i].color.r, mInventory.blocks[i].color.g, mInventory.blocks[i].color.b, mInventory.blocks[i].color.a);
+		SDL_RenderFillRect(mRenderer, &invRect);
+	}
+
+	// Draw block pickups
+	for (const auto& pickup : mBlockPickups) {
+		if (pickup.isActive) {
+			SDL_Rect pickupRect = { static_cast<int>(pickup.position.x), static_cast<int>(pickup.position.y), mGridSize / 2, mGridSize / 2 };
+			SDL_SetRenderDrawColor(mRenderer, pickup.block.color.r, pickup.block.color.g, pickup.block.color.b, pickup.block.color.a);
+			SDL_RenderFillRect(mRenderer, &pickupRect);
+		}
+	}
+
+	// Draw inventory grid background
+	SDL_SetRenderDrawColor(mRenderer, 50, 50, 50, 255); // Dark gray color for inventory background
+	SDL_Rect invBackgroundRect = { 0, invGridYPos, 1024, invGridSize };
+	SDL_RenderFillRect(mRenderer, &invBackgroundRect);
+
+	// Draw inventory blocks
+	for (size_t i = 0; i < mInventory.blocks.size(); ++i) {
+		SDL_Rect invBlockRect = { static_cast<int>(i * invGridSize), invGridYPos, invGridSize, invGridSize };
+		SDL_SetRenderDrawColor(mRenderer, mInventory.blocks[i].color.r, mInventory.blocks[i].color.g, mInventory.blocks[i].color.b, mInventory.blocks[i].color.a);
+		SDL_RenderFillRect(mRenderer, &invBlockRect);
+	}
+
+	// Highlight selected block in inventory
+	if (mInventory.selectedIndex < mInventory.blocks.size()) {
+		SDL_Rect selectedRect = { mInventory.selectedIndex * invGridSize, invGridYPos, invGridSize, invGridSize };
+		SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255); // White color for selection highlight
+		SDL_RenderDrawRect(mRenderer, &selectedRect); // Draw a rectangle around the selected block
 	}
 
     SDL_RenderPresent(mRenderer);
