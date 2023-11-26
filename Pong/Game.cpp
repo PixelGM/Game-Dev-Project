@@ -61,7 +61,7 @@ const int invGridHeight = 1; // Height of inventory grid (1 row)
 const int invGridYPos = 768 - invGridSize; // Y position of inventory grid
 
 // World variables
-const int groundHeight = 100; // You can adjust this value as needed
+const int groundHeight = 168; // You can adjust this value as needed
 
 // Collision Check, Check if two rectangles intersect
 bool CheckCollision(const SDL_Rect& a, const SDL_Rect& b) {
