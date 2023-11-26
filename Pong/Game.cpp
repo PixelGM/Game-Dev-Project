@@ -1,3 +1,4 @@
+// One block = 50 pixel
 
 #include "Game.h"
 
@@ -40,6 +41,7 @@ struct BlockPickup {
 
 Player mPlayer;
 SDL_Rect playerRect;
+SDL_Rect groundRect;
 Inventory mInventory;
 std::vector<BlockPickup> mBlockPickups;
 
@@ -58,6 +60,10 @@ const int invGridWidth = 1024 / invGridSize; // Width of inventory grid
 const int invGridHeight = 1; // Height of inventory grid (1 row)
 const int invGridYPos = 768 - invGridSize; // Y position of inventory grid
 
+// World variables
+const int groundHeight = 100; // You can adjust this value as needed
+
+// Collision Check, Check if two rectangles intersect
 bool CheckCollision(const SDL_Rect& a, const SDL_Rect& b) {
 	// Check if two rectangles intersect
 	return (a.x < b.x + b.w) &&
@@ -354,6 +360,13 @@ void Game::UpdateGame()
 		}
 	}
 
+	// Example of collision detection with ground
+	if (CheckCollision(playerRect, groundRect)) {
+		mPlayer.mPos.y = groundRect.y - mPlayer.mHeight;
+		mPlayer.isOnGround = true;
+		mPlayer.mVelY = 0.0f;
+	}
+
 	// Check if the player has landed on the ground
 	if (mPlayer.mPos.y >= 768.0f - thickness - mPlayer.mHeight) {
 		mPlayer.mPos.y = 768.0f - thickness - mPlayer.mHeight;
@@ -370,10 +383,10 @@ void Game::GenerateOutput() {
     SDL_SetRenderDrawColor(mRenderer, 0, 191, 255, 255);
     SDL_RenderClear(mRenderer);
 
-    // Draw ground
-    SDL_SetRenderDrawColor(mRenderer, 139, 69, 19, 255); // Brown color
-    SDL_Rect groundRect = {0, 768 - thickness, 1024, thickness};
-    SDL_RenderFillRect(mRenderer, &groundRect);
+	// Draw ground
+	SDL_SetRenderDrawColor(mRenderer, 139, 69, 19, 255); // Brown color for ground
+	groundRect = { 0, 768 - groundHeight, 1024, groundHeight };
+	SDL_RenderFillRect(mRenderer, &groundRect);
 
 	SDL_Rect srcRect = {
 		mPlayer.frameWidth * mPlayer.currentFrame, // X position based on current frame
