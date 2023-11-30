@@ -45,6 +45,20 @@ SDL_Rect groundRect;
 Inventory mInventory;
 std::vector<BlockPickup> mBlockPickups;
 
+const SDL_Color blockColors[9] = {
+	{255, 255, 255, 255}, // White
+	{192, 192, 192, 255}, // Light Gray
+	{128, 128, 128, 255}, // Gray
+	{64, 64, 64, 255},    // Dark Gray
+	{255, 0, 0, 255},     // Red
+	{0, 255, 0, 255},     // Green
+	{0, 0, 255, 255},     // Blue
+	{255, 255, 0, 255},   // Yellow
+	{0, 0, 0, 255}        // Black
+};
+
+
+
 // Grid variables
 bool mShowGrid = true;
 int mGridSize = 50; // Grid cell size
@@ -140,9 +154,11 @@ bool Game::Initialize()
 	mPlayer.isOnGround = true; // Initially, the player is on the ground
 
 	// Initialize inventory
-	mInventory.blocks.push_back({ true, {128, 0, 128, 255} }); // Add one purple block
-	mInventory.blocks.push_back({ true, {255, 255, 0, 255} }); // Add one yellow block
+	for (int i = 0; i < 9; ++i) {
+		mInventory.blocks.push_back({ true, blockColors[i] });
+	}
 	mInventory.selectedIndex = 0; // Start with the first block selected
+	
 
 	return true;
 }
@@ -180,6 +196,14 @@ void Game::ProcessInput()
 			#ifndef NDEBUG
 					mGridSize = std::max(10, mGridSize - 10); // Decrease grid size, minimum 10
 			#endif
+				}
+
+				// Handle inventory selection with number keys
+				if (event.key.keysym.sym >= SDLK_1 && event.key.keysym.sym <= SDLK_9) {
+					int selectedBlock = event.key.keysym.sym - SDLK_1;
+					if (selectedBlock < mInventory.blocks.size()) {
+						mInventory.selectedIndex = selectedBlock;
+					}
 				}
 
 			}
