@@ -2,6 +2,9 @@
 #include "SDL/SDL.h"
 #include "SDL/SDL_image.h"
 
+#include <SDL/SDL_mixer.h>
+#include <SDL/SDL_audio.h>
+
 #include <algorithm>
 #include <vector>
 
@@ -31,4 +34,6 @@ private:
 	SDL_Color highlightColor;
 	int highlightColorChangeDirection;
 	int highlightThickness;
+
+	Mix_Chunk* mSoundtrack;
 };

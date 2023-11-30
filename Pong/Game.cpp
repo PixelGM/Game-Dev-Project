@@ -138,6 +138,9 @@ bool Game::Initialize()
 		return false;
 	}
 
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2400);
+	mSoundtrack = Mix_LoadWAV("Chiptune.wav");
+
 	// Initialize player sprite
 	SDL_Surface* tempSurface = IMG_Load("Idle.png");
 	mPlayer.spriteSheet = SDL_CreateTextureFromSurface(mRenderer, tempSurface);
@@ -163,6 +166,7 @@ bool Game::Initialize()
 	}
 	mInventory.selectedIndex = 0; // Start with the first block selected
 	
+	Mix_PlayChannel(-1, mSoundtrack, 0);
 
 	return true;
 }
