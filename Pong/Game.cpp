@@ -39,11 +39,19 @@ struct BlockPickup {
 	bool isActive;
 };
 
+struct Cloud {
+	Vector2 position;
+	float speed;
+	int width;
+	int height;
+};
+
 Player mPlayer;
 SDL_Rect playerRect;
 SDL_Rect groundRect;
 Inventory mInventory;
 std::vector<BlockPickup> mBlockPickups;
+std::vector<Cloud> clouds;
 
 const SDL_Color blockColors[9] = {
 	{255, 255, 255, 255}, // White
@@ -171,6 +179,17 @@ bool Game::Initialize()
 	
 	// Play Soundtrack
 	Mix_PlayChannel(-1, mSoundtrack, 0);
+
+	// Initialize clouds
+	for (int i = 0; i < 5; ++i) { // Create 5 clouds
+		Cloud cloud;
+		cloud.position.x = static_cast<float>(rand() % 1024); // Random X position
+		cloud.position.y = static_cast<float>(rand() % 200);  // Random Y position within top part of the screen
+		cloud.speed = 50.0f + static_cast<float>(rand() % 100); // Random speed
+		cloud.width = 100 + rand() % 100; // Random width
+		cloud.height = 50 + rand() % 50;  // Random height
+		clouds.push_back(cloud);
+	}
 
 	return true;
 }
@@ -431,6 +450,14 @@ void Game::UpdateGame()
 		}
 	}
 
+	// Update clouds
+	for (auto& cloud : clouds) {
+		cloud.position.x += cloud.speed * deltaTime;
+		if (cloud.position.x > 1024) { // If cloud moves off-screen
+			cloud.position.x = -static_cast<float>(cloud.width); // Reset to left side
+		}
+	}
+
 	// Update tick counts (for next frame)
 	mTicksCount = SDL_GetTicks();
 }
@@ -439,6 +466,18 @@ void Game::GenerateOutput() {
     // Set background to blue
     SDL_SetRenderDrawColor(mRenderer, 0, 191, 255, 255);
     SDL_RenderClear(mRenderer);
+
+	// Draw clouds
+	SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255); // White color for clouds
+	for (const auto& cloud : clouds) {
+		SDL_Rect cloudRect = {
+			static_cast<int>(cloud.position.x),
+			static_cast<int>(cloud.position.y),
+			cloud.width,
+			cloud.height
+		};
+		SDL_RenderFillRect(mRenderer, &cloudRect);
+	}
 
 	// Draw ground
 	SDL_SetRenderDrawColor(mRenderer, 139, 69, 19, 255); // Brown color for ground
