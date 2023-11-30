@@ -138,8 +138,11 @@ bool Game::Initialize()
 		return false;
 	}
 
+	// Initialize sounds
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2400);
 	mSoundtrack = Mix_LoadWAV("Chiptune.wav");
+	mJump = Mix_LoadWAV("se_jump_003.wav");
+
 
 	// Initialize player sprite
 	SDL_Surface* tempSurface = IMG_Load("Idle.png");
@@ -166,6 +169,7 @@ bool Game::Initialize()
 	}
 	mInventory.selectedIndex = 0; // Start with the first block selected
 	
+	// Play Soundtrack
 	Mix_PlayChannel(-1, mSoundtrack, 0);
 
 	return true;
@@ -286,6 +290,7 @@ void Game::ProcessInput()
 	if (state[SDL_SCANCODE_W] && mPlayer.isOnGround) {
 		mPlayer.mVelY = -350.0f; // Set a negative velocity to move up
 		mPlayer.isOnGround = false;
+		Mix_PlayChannel(-1, mJump, 0); // Play Jump sound effect
 	}
 	if (state[SDL_SCANCODE_S]) {
 		if (!mPlayer.isCrouching) {

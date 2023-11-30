@@ -35,5 +35,7 @@ private:
 	int highlightColorChangeDirection;
 	int highlightThickness;
 
+	// Sounds
 	Mix_Chunk* mSoundtrack;
+	Mix_Chunk* mJump;
 };
