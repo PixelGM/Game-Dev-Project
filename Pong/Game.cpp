@@ -42,6 +42,7 @@ struct BlockPickup {
 struct Cloud {
 	Vector2 position;
 	float speed;
+	SDL_Texture* texture;
 	int width;
 	int height;
 };
@@ -180,14 +181,19 @@ bool Game::Initialize()
 	// Play Soundtrack
 	Mix_PlayChannel(-1, mSoundtrack, 0);
 
+	// Load cloud texture
+	SDL_Surface* cloudSurface = IMG_Load("Clouds.png");
+	SDL_Texture* cloudTexture = SDL_CreateTextureFromSurface(mRenderer, cloudSurface);
+	SDL_FreeSurface(cloudSurface);
+
 	// Initialize clouds
-	for (int i = 0; i < 5; ++i) { // Create 5 clouds
+	for (int i = 0; i < 5; ++i) {
 		Cloud cloud;
-		cloud.position.x = static_cast<float>(rand() % 1024); // Random X position
-		cloud.position.y = static_cast<float>(rand() % 200);  // Random Y position within top part of the screen
-		cloud.speed = 50.0f + static_cast<float>(rand() % 100); // Random speed
-		cloud.width = 100 + rand() % 100; // Random width
-		cloud.height = 50 + rand() % 50;  // Random height
+		cloud.position.x = static_cast<float>(rand() % 1024);
+		cloud.position.y = static_cast<float>(rand() % 200);
+		cloud.speed = 50.0f + static_cast<float>(rand() % 100);
+		cloud.texture = cloudTexture;
+		SDL_QueryTexture(cloud.texture, NULL, NULL, &cloud.width, &cloud.height); // Get width and height from texture
 		clouds.push_back(cloud);
 	}
 
@@ -468,7 +474,6 @@ void Game::GenerateOutput() {
     SDL_RenderClear(mRenderer);
 
 	// Draw clouds
-	SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255); // White color for clouds
 	for (const auto& cloud : clouds) {
 		SDL_Rect cloudRect = {
 			static_cast<int>(cloud.position.x),
@@ -476,7 +481,7 @@ void Game::GenerateOutput() {
 			cloud.width,
 			cloud.height
 		};
-		SDL_RenderFillRect(mRenderer, &cloudRect);
+		SDL_RenderCopy(mRenderer, cloud.texture, NULL, &cloudRect);
 	}
 
 	// Draw ground
