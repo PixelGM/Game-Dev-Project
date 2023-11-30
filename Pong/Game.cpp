@@ -12,6 +12,7 @@ struct Player {
 	float mVelX;
 	bool isCrouching;
 	bool isOnGround;
+	bool facingRight;	
 
 	// Animation fields
 	SDL_Texture* spriteSheet;
@@ -171,6 +172,7 @@ bool Game::Initialize()
 	mPlayer.mVelY = 0.0f;
 	mPlayer.isCrouching = false;
 	mPlayer.isOnGround = true; // Initially, the player is on the ground
+	mPlayer.facingRight = true; // Initially facing 
 
 	// Initialize inventory
 	for (int i = 0; i < 9; ++i) {
@@ -296,17 +298,21 @@ void Game::ProcessInput()
 	if (state[SDL_SCANCODE_A]) {
 		if (mPlayer.isCrouching) {
 			mPlayer.mVelX = -100.0f; // Move slower while crouching
+			mPlayer.facingRight = false; // Facing left
 		}
 		else {
 			mPlayer.mVelX = -300.0f; // Move left
+			mPlayer.facingRight = false; // Facing left
 		}
 	}
 	else if (state[SDL_SCANCODE_D]) {
 		if (mPlayer.isCrouching) {
 			mPlayer.mVelX = 100.0f; // Move slower while crouching
+			mPlayer.facingRight = true; // Facing right
 		}
 		else {
 			mPlayer.mVelX = 300.0f; // Move right
+			mPlayer.facingRight = true; // Facing right
 		}
 	}
 	else {
@@ -508,6 +514,8 @@ void Game::GenerateOutput() {
 		yOffset = adjustedHeight; // Move down to keep feet at the same position
 	}
 
+	SDL_RendererFlip flipType = mPlayer.facingRight ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL;
+
 	SDL_Rect destRect = {
 		static_cast<int>(mPlayer.mPos.x),
 		static_cast<int>(mPlayer.mPos.y) + yOffset,
@@ -515,7 +523,7 @@ void Game::GenerateOutput() {
 		adjustedHeight
 	};
 
-	SDL_RenderCopy(mRenderer, mPlayer.spriteSheet, &srcRect, &destRect);
+	SDL_RenderCopyEx(mRenderer, mPlayer.spriteSheet, &srcRect, &destRect, 0.0, NULL, flipType);
 
 
 	// Get current mouse position
