@@ -93,6 +93,10 @@ Game::Game()
 	mRenderer = nullptr;
 	mTicksCount = 0;
 	mIsRunning = true;
+
+	highlightColor = { 255, 255, 255, 255 };
+	highlightColorChangeDirection = 1;
+	highlightThickness = 2;
 }
 
 bool Game::Initialize()
@@ -399,6 +403,25 @@ void Game::UpdateGame()
 		mPlayer.mVelY = 0.0f;
 	}
 
+	// Update highlight color for selection
+	const int colorChangeSpeed = 5; // Adjust speed of color change
+	if (highlightColorChangeDirection == 1) {
+		highlightColor.r = std::min(255, highlightColor.r + colorChangeSpeed);
+		highlightColor.g = std::min(255, highlightColor.g + colorChangeSpeed);
+		highlightColor.b = std::min(255, highlightColor.b + colorChangeSpeed);
+		if (highlightColor.r == 255 && highlightColor.g == 255 && highlightColor.b == 255) {
+			highlightColorChangeDirection = -1;
+		}
+	}
+	else {
+		highlightColor.r = std::max(0, highlightColor.r - colorChangeSpeed);
+		highlightColor.g = std::max(0, highlightColor.g - colorChangeSpeed);
+		highlightColor.b = std::max(0, highlightColor.b - colorChangeSpeed);
+		if (highlightColor.r == 0 && highlightColor.g == 0 && highlightColor.b == 0) {
+			highlightColorChangeDirection = 1;
+		}
+	}
+
 	// Update tick counts (for next frame)
 	mTicksCount = SDL_GetTicks();
 }
@@ -508,9 +531,23 @@ void Game::GenerateOutput() {
 	}
 
 	// Highlight selected block in inventory
-	invStartX = 512 - (mInventory.blocks.size() * invGridSize) / 2;
-	SDL_Rect selectedRect = { invStartX + mInventory.selectedIndex * invGridSize, invGridYPos, invGridSize, invGridSize };
-	SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255); // White color for selection highlight
+	
+	int selectedX = invStartX + mInventory.selectedIndex * invGridSize;
+	SDL_Rect selectedRect = { selectedX, invGridYPos, invGridSize, invGridSize };
+
+	// Set the color for the highlight
+	SDL_SetRenderDrawColor(mRenderer, highlightColor.r, highlightColor.g, highlightColor.b, highlightColor.a);
+
+	// Draw multiple rectangles for a thicker border
+	for (int i = 0; i < highlightThickness; ++i) {
+		SDL_Rect highlightRect = {
+			selectedRect.x - i, selectedRect.y - i,
+			selectedRect.w + 2 * i, selectedRect.h + 2 * i
+		};
+		SDL_RenderDrawRect(mRenderer, &highlightRect);
+	}
+
+	SDL_SetRenderDrawColor(mRenderer, highlightColor.r, highlightColor.g, highlightColor.b, highlightColor.a);
 	SDL_RenderDrawRect(mRenderer, &selectedRect);
 
 	for (int x = 0; x < gridWidth; ++x) {
@@ -522,6 +559,7 @@ void Game::GenerateOutput() {
 			}
 		}
 	}
+
 
     SDL_RenderPresent(mRenderer);
 }

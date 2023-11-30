@@ -27,4 +27,8 @@ private:
 	SDL_Window* mWindow;
 	SDL_Renderer* mRenderer;
 	Uint32 mTicksCount;
+
+	SDL_Color highlightColor;
+	int highlightColorChangeDirection;
+	int highlightThickness;
 };
