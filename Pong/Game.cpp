@@ -199,6 +199,7 @@ void Game::ProcessInput()
 				}
 
 				// Handle inventory selection with number keys
+				// (I know I am big brained lmao uwu. I just came out with an idea at 2am LOL)
 				if (event.key.keysym.sym >= SDLK_1 && event.key.keysym.sym <= SDLK_9) {
 					int selectedBlock = event.key.keysym.sym - SDLK_1;
 					if (selectedBlock < mInventory.blocks.size()) {
