@@ -414,18 +414,29 @@ void Game::GenerateOutput() {
 	SDL_RenderCopy(mRenderer, mPlayer.spriteSheet, &srcRect, &destRect);
 
 
+	// Get current mouse position
+	int mouseX, mouseY;
+	SDL_GetMouseState(&mouseX, &mouseY);
+
+	// Set the range around the mouse to display the grid
+	int gridRange = 5; // This is the number of grid cells around the mouse to display
+
+	// Calculate the top-left corner for the grid rendering
+	int startX = mouseX - (mouseX % mGridSize) - (gridRange * mGridSize);
+	int startY = mouseY - (mouseY % mGridSize) - (gridRange * mGridSize);
+
 	// Draw grid keybind
 	if (mShowGrid) {
 		SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255); // White color for grid
 
-		// Draw vertical lines
-		for (int x = 0; x < 1024; x += mGridSize) {
-			SDL_RenderDrawLine(mRenderer, x, 0, x, 768);
+		// Draw vertical lines within range
+		for (int x = startX; x <= startX + 2 * gridRange * mGridSize; x += mGridSize) {
+			SDL_RenderDrawLine(mRenderer, x, startY, x, startY + 2 * gridRange * mGridSize);
 		}
 
-		// Draw horizontal lines
-		for (int y = 0; y < 768; y += mGridSize) {
-			SDL_RenderDrawLine(mRenderer, 0, y, 1024, y);
+		// Draw horizontal lines within range
+		for (int y = startY; y <= startY + 2 * gridRange * mGridSize; y += mGridSize) {
+			SDL_RenderDrawLine(mRenderer, startX, y, startX + 2 * gridRange * mGridSize, y);
 		}
 	}
 
