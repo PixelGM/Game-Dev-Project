@@ -41,10 +41,10 @@ struct BlockPickup {
 
 struct Cloud {
 	Vector2 position;
-	float speed;
-	SDL_Texture* texture;
 	int width;
 	int height;
+	SDL_Texture* texture;
+	float speed;  // Speed of the cloud
 };
 
 Player mPlayer;
@@ -191,7 +191,7 @@ bool Game::Initialize()
 		Cloud cloud;
 		cloud.position.x = static_cast<float>(rand() % 1024);
 		cloud.position.y = static_cast<float>(rand() % 200);
-		cloud.speed = 50.0f + static_cast<float>(rand() % 100);
+		cloud.speed = 0.0f + static_cast<float>(rand() % 100);
 		cloud.texture = cloudTexture;
 		SDL_QueryTexture(cloud.texture, NULL, NULL, &cloud.width, &cloud.height); // Get width and height from texture
 		clouds.push_back(cloud);
