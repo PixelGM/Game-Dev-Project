@@ -419,7 +419,7 @@ void Game::GenerateOutput() {
 	SDL_GetMouseState(&mouseX, &mouseY);
 
 	// Set the range around the mouse to display the grid
-	int gridRange = 5; // This is the number of grid cells around the mouse to display
+	int gridRange = 3; // This is the number of grid cells around the mouse to display
 
 	// Calculate the top-left corner for the grid rendering
 	int startX = mouseX - (mouseX % mGridSize) - (gridRange * mGridSize);
