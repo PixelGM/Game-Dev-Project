@@ -475,11 +475,14 @@ void Game::GenerateOutput() {
 
 	// Draw clouds
 	for (const auto& cloud : clouds) {
+		// Define scale factor (e.g., 0.5 for half size)
+		float scaleFactor = 0.3f;
+
 		SDL_Rect cloudRect = {
 			static_cast<int>(cloud.position.x),
 			static_cast<int>(cloud.position.y),
-			cloud.width,
-			cloud.height
+			static_cast<int>(cloud.width * scaleFactor),  // Scale width
+			static_cast<int>(cloud.height * scaleFactor)  // Scale height
 		};
 		SDL_RenderCopy(mRenderer, cloud.texture, NULL, &cloudRect);
 	}
